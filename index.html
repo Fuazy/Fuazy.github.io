@@ -33,7 +33,6 @@
       pointer-events: none;
       font-weight: bold;
     }
-
     h2 {
       position: absolute;
       top: 10vw;
@@ -60,7 +59,6 @@
 <body>
   <div id="info">🔥 EL DADO TRAVIESO 🔥</div>
   <h2>😈 Hecho por David Fouces 😈</h2>
-  <!-- Audio actualizado -->
   <audio id="result-sound" src="https://www.myinstants.com/media/sounds/hub-intro.mp3"></audio>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script>
@@ -93,10 +91,10 @@
       return discoWallTexture;
     }
 
-    // Cámara: esquina del suelo alineada con el centro visual
+    // Cámara: esquina del suelo alineada con el centro visual, dado más abajo
     const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.set(4, 3.7, 4);
-    camera.lookAt(0, -1.2, 0);
+    camera.lookAt(0, -1.8, 0);
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({antialias: true});
@@ -135,7 +133,7 @@
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.rotation.z = Math.PI / 4; // esquina alineada
-    floor.position.y = -1.2;
+    floor.position.y = -1.8;
     floor.receiveShadow = true;
     scene.add(floor);
 
@@ -160,30 +158,54 @@
     const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.32 });
     const shadowPlane = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
     shadowPlane.rotation.x = -Math.PI / 2;
-    shadowPlane.position.y = -1.18;
+    shadowPlane.position.y = -1.77;
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
 
-    // Dado con diseño chulo
+    // Dado con diseño chulo y palabras MUY visibles
     function makeDiceMaterial(label, highlight = false) {
       const c = document.createElement('canvas');
       c.width = c.height = 256;
       const ctx = c.getContext('2d');
-      // Gradiente radial
-      const g = ctx.createRadialGradient(128,128,30,128,128,120);
-      g.addColorStop(0, highlight ? '#fff8ff' : '#ffe6fd');
-      g.addColorStop(0.65, highlight ? '#d200ff' : '#a200c8');
-      g.addColorStop(1, highlight ? '#3d0047' : '#12001a');
+      // Fondo degradado fuerte
+      const g = ctx.createLinearGradient(0, 0, 256, 256);
+      if (highlight) {
+        g.addColorStop(0, "#fff");
+        g.addColorStop(0.35, "#e200ff");
+        g.addColorStop(1, "#420044");
+      } else {
+        g.addColorStop(0, "#ffe94c");
+        g.addColorStop(0.3, "#d200ff");
+        g.addColorStop(1, "#23006d");
+      }
       ctx.fillStyle = g;
       ctx.fillRect(0,0,256,256);
-      // Glow para la palabra
-      ctx.font = highlight ? 'bold 48px sans-serif' : 'bold 38px sans-serif';
+
+      // Palabra: tipo disco, muy grande y con borde
+      ctx.save();
+      ctx.font = highlight ? 'bold 58px Segoe UI, Arial, sans-serif' : 'bold 48px Segoe UI, Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.shadowColor = highlight ? "#fff0fc" : "#d200ff";
-      ctx.shadowBlur = highlight ? 22 : 12;
-      ctx.fillStyle = highlight ? '#fff' : '#ffe94c';
-      ctx.fillText(label, 128, 128);
+      if (highlight) {
+        ctx.shadowColor = '#fff';
+        ctx.shadowBlur = 22;
+        ctx.lineWidth = 7;
+        ctx.strokeStyle = "#ff00e0";
+        ctx.fillStyle = "#fff";
+        ctx.strokeText(label, 128, 132);
+        ctx.fillText(label, 128, 132);
+      } else {
+        ctx.shadowColor = "#000";
+        ctx.shadowBlur = 0;
+        ctx.lineWidth = 7;
+        ctx.strokeStyle = "#000";
+        ctx.fillStyle = "#fff";
+        ctx.strokeText(label, 128, 132);
+        ctx.fillStyle = "#ffe94c";
+        ctx.fillText(label, 128, 132);
+      }
+      ctx.restore();
+
       // Bordes brillantes
       ctx.lineWidth = 8;
       ctx.strokeStyle = highlight ? "#fff" : "#d200ff";
@@ -193,21 +215,24 @@
       return new THREE.MeshStandardMaterial({
         map: tex,
         color: 0xffffff,
-        emissive: highlight ? new THREE.Color(0xd200ff) : new THREE.Color(0x1a0047),
-        emissiveIntensity: highlight ? 0.66 : 0.18,
-        metalness: 0.25,
-        roughness: 0.45,
+        emissive: highlight ? new THREE.Color(0xec03ff) : new THREE.Color(0x1a0047),
+        emissiveIntensity: highlight ? 0.85 : 0.18,
+        metalness: 0.28,
+        roughness: 0.39,
         side: THREE.DoubleSide
       });
     }
+
     const labels = ['Beso', 'Bailecito', 'Copa', 'Pico', 'Chupito', 'Instagram'];
+
     function createDiceMaterials(highlightIdx = -1) {
       return labels.map((l, i) => makeDiceMaterial(l, i === highlightIdx));
     }
     let cube = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2), createDiceMaterials());
     cube.castShadow = true;
     cube.receiveShadow = false;
-    cube.position.y = 0.3;
+    // BAJAMOS EL DADO
+    cube.position.y = -0.55;
     scene.add(cube);
 
     const faceNormals = [
@@ -281,7 +306,7 @@
       discoLights[1].position.z = -2 + Math.sin(t*1.3)*2;
       discoLights[2].position.y = 4 + Math.sin(t*2.5)*0.8;
 
-      cube.position.y = baseY + Math.sin(t * 2.8) * 0.18;
+      cube.position.y = baseY + Math.sin(t * 2.8) * 0.14;
       if (isRolling) {
         const elapsed = t - rollStart;
         const p = Math.min(elapsed / rollDuration, 1);
