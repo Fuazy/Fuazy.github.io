@@ -2,172 +2,313 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Elige tu dado travieso</title>
+  <title>El dado travieso</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <style>
-    body {
-      min-height: 100vh;
-      margin: 0;
-      background: #0d0016;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      overflow: hidden;
-      position: relative;
+    body, html { 
+      margin: 0; 
+      height: 100%; 
+      background: radial-gradient(ellipse at center, #2a002a 0%, #150024 100%);
+      color: #000000; 
+      overflow: hidden; 
     }
-    h1 {
-      color: #fff;
-      font-size: 7vw;
-      margin-bottom: 6vw;
+    #info {
+      position: absolute;
+      top: 3vw;
+      width: 100%;
       text-align: center;
+      z-index: 5;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      font-size: 6vw;
+      letter-spacing: 2px;
+      color: #fff;
       text-shadow:
+        0 0 7px #d200ff,
         0 0 10px #d200ff,
         0 0 21px #d200ff,
-        0 0 42px #a200c8;
-      letter-spacing: 2px;
-      filter: brightness(1.2);
+        0 0 42px #a200c8,
+        0 0 82px #7d1ab8;
+      filter: brightness(1.3);
       user-select: none;
-    }
-    .buttons-container {
-      display: flex;
-      flex-direction: column;
-      gap: 8vw;
-      align-items: center;
-      justify-content: center;
-      width: 100vw;
-      max-width: 480px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 2;
-    }
-    .neon-btn {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 80vw;
-      max-width: 350px;
-      height: 64px;
-      margin: 0 auto;
-      font-size: 2.2em;
-      color: #fff;
-      border: none;
-      border-radius: 2em;
-      background: #12001a;
-      text-decoration: none;
-      box-shadow: 0 0 14px #d200ff, 0 0 32px #7d1ab8 inset;
-      letter-spacing: 2px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: transform .1s cubic-bezier(.4,1,.4,1), box-shadow .1s cubic-bezier(.4,1,.4,1);
-      outline: none;
-      z-index: 1;
-      overflow: visible;
-      user-select: none;
-      text-align: center;
-      text-shadow:
-        0 0 5px #fff, 0 0 12px #d200ff;
-    }
-    .neon-btn:active {
-      transform: scale(0.96);
-      box-shadow: 0 0 22px #d200ff, 0 0 42px #a200c8 inset;
-    }
-    .neon-btn.copas {
-      box-shadow: 0 0 14px #009aff, 0 0 32px #00e3ff inset;
-      text-shadow: 0 0 8px #00e3ff, 0 0 22px #009aff;
-      background: #06122a;
-    }
-    .neon-btn.copas:active {
-      box-shadow: 0 0 22px #00e3ff, 0 0 42px #009aff inset;
-    }
-    .neon-btn.fuego {
-      box-shadow: 0 0 18px #ffb300, 0 0 42px #ff2e00 inset;
-      text-shadow: 0 0 8px #fff700, 0 0 22px #ff2e00;
-      background: #2b1200;
-      color: #fff4d1;
-      border: 2px solid #ff5e00;
-    }
-    .neon-btn.fuego:active {
-      box-shadow: 0 0 22px #ffb300, 0 0 42px #ff2e00 inset;
-    }
-    .btn-img {
-      position: absolute;
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      height: 44px;
-      width: 44px;
-      z-index: 2;
       pointer-events: none;
+      font-weight: bold;
+    }
+
+    h2 {
+      position: absolute;
+      top: 10vw;
+      width: 100%;
+      text-align: center;
+      z-index: 5;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      font-size: 4vw;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow:
+        0 0 7px #d200ff,
+        0 0 10px #d200ff,
+        0 0 21px #d200ff,
+        0 0 42px #a200c8,
+        0 0 82px #7d1ab8;
+      filter: brightness(1.3);
       user-select: none;
+      pointer-events: none;
     }
-    /* Responsive */
-    @media (max-width: 600px) {
-      .neon-btn {
-        height: 46px;
-        font-size: 1.4em;
-        max-width: 92vw;
-      }
-      .btn-img {
-        height: 34px;
-        width: 34px;
-        left: 10px;
-      }
-    }
+    canvas { display: block; }
   </style>
 </head>
 <body>
-  <h1>DADOS TRAVIESOS</h1>
-  <div class="buttons-container">
-    <!-- Botón 1: clásico -->
-    <a class="neon-btn js-sound-btn" href="dado3.html">Dado clásico</a>
-
-    <!-- Botón 2: copas/cubatas con imagen -->
-    <a class="neon-btn copas js-sound-btn" href="dado3.html">
-      <img src="https://cdn-icons-png.flaticon.com/512/2738/2738897.png" alt="cubata" class="btn-img" />
-      Dado copas
-    </a>
-
-    <!-- Botón 3: fuego con imagen -->
-    <a class="neon-btn fuego js-sound-btn" href="dado3.html" id="btn-fuego">
-      <img src="https://cdn-icons-png.flaticon.com/512/616/616494.png" alt="fuego" class="btn-img" />
-      Dado extremo
-    </a>
-  </div>
-  <!-- Sonido personalizado para botones (pon tu mp3 preferido aquí) -->
-  <audio id="tick-sound" src="tick.mp3"></audio>
+  <div id="info">🔥 EL DADO TRAVIESO 🔥</div>
+  <h2>😈 Hecho por David Fouces 😈</h2>
+  <!-- Audio actualizado -->
+  <audio id="result-sound" src="https://www.myinstants.com/media/sounds/hub-intro.mp3"></audio>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script>
-    // Transición sencilla: fade out + sonido y luego redirección
-    document.querySelectorAll('.js-sound-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-        // Sonido
-        const audio = document.getElementById('tick-sound');
-        if(audio) { audio.currentTime = 0; audio.play(); }
-        // Fade out sencillo
-        document.body.style.transition = "opacity 0.32s cubic-bezier(.7,0,.7,1)";
-        document.body.style.opacity = "0";
-        setTimeout(() => {
-          window.location.href = btn.href;
-        }, 320);
-      });
-      btn.addEventListener('touchend', function(e){
-        e.preventDefault();
-        // Sonido
-        const audio = document.getElementById('tick-sound');
-        if(audio) { audio.currentTime = 0; audio.play(); }
-        // Fade out sencillo
-        document.body.style.transition = "opacity 0.32s cubic-bezier(.7,0,.7,1)";
-        document.body.style.opacity = "0";
-        setTimeout(() => {
-          window.location.href = btn.href;
-        }, 320);
-      });
+    // --- SCENE & CAMERA ---
+    const scene = new THREE.Scene();
+
+    // Fondo y paredes tipo discoteca con canvas animado
+    function createDiscoWallTexture() {
+      const c = document.createElement('canvas');
+      c.width = c.height = 512;
+      const ctx = c.getContext('2d');
+      let t = 0;
+      function draw() {
+        ctx.clearRect(0, 0, 512, 512);
+        for (let y = 0; y < 8; y++) {
+          for (let x = 0; x < 8; x++) {
+            const hue = (x * 45 + y * 30 + t) % 360;
+            ctx.fillStyle = `hsl(${hue}, 85%, 45%)`;
+            ctx.shadowColor = `hsl(${hue}, 90%, 70%)`;
+            ctx.shadowBlur = 18;
+            ctx.fillRect(x * 64, y * 64, 64, 64);
+          }
+        }
+        t += 2;
+        discoWallTexture.needsUpdate = true;
+        requestAnimationFrame(draw);
+      }
+      const discoWallTexture = new THREE.CanvasTexture(c);
+      draw();
+      return discoWallTexture;
+    }
+
+    // Cámara: esquina del suelo alineada con el centro visual
+    const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(4, 3.7, 4);
+    camera.lookAt(0, -1.2, 0);
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setClearColor(0x150024);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    // Luces de discoteca
+    scene.add(new THREE.AmbientLight(0x6600cc, 0.35));
+    const discoLights = [
+      new THREE.PointLight(0xff00cc, 1.2, 8, 2), // rosa
+      new THREE.PointLight(0x00ffd0, 1.1, 8, 2), // verde-azul
+      new THREE.PointLight(0xffff00, 0.7, 8, 2), // amarillo
+    ];
+    discoLights[0].position.set(-3, 3, 2);
+    discoLights[1].position.set(3, 3, -2);
+    discoLights[2].position.set(0, 4, 0);
+    discoLights.forEach(l => { l.castShadow = false; scene.add(l); });
+
+    // Suelo y paredes disco
+    const discoWallTexture = createDiscoWallTexture();
+    discoWallTexture.wrapS = discoWallTexture.wrapT = THREE.RepeatWrapping;
+    discoWallTexture.repeat.set(1, 1);
+
+    // Suelo
+    const floorGeo = new THREE.PlaneGeometry(8, 8);
+    const floorMat = new THREE.MeshPhongMaterial({
+      map: discoWallTexture,
+      shininess: 80,
+      specular: 0xffffff,
+      emissive: 0x220044,
+      side: THREE.DoubleSide
     });
-    // Quita el fade inicial si quieres que la página entre sin transición
-    document.body.style.opacity = "1";
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.rotation.z = Math.PI / 4; // esquina alineada
+    floor.position.y = -1.2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Paredes
+    const wallMat = new THREE.MeshPhongMaterial({
+      map: discoWallTexture,
+      shininess: 40,
+      emissive: 0x330033,
+      transparent: true,
+      opacity: 0.67,
+      side: THREE.BackSide
+    });
+    const walls = new THREE.Mesh(
+      new THREE.BoxGeometry(12, 7, 12),
+      [wallMat, wallMat, wallMat, wallMat, wallMat, wallMat]
+    );
+    walls.position.y = 2.3;
+    scene.add(walls);
+
+    // Sombra del dado
+    const shadowPlaneGeo = new THREE.PlaneGeometry(2, 2);
+    const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.32 });
+    const shadowPlane = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.y = -1.18;
+    shadowPlane.receiveShadow = true;
+    scene.add(shadowPlane);
+
+    // Dado con diseño chulo
+    function makeDiceMaterial(label, highlight = false) {
+      const c = document.createElement('canvas');
+      c.width = c.height = 256;
+      const ctx = c.getContext('2d');
+      // Gradiente radial
+      const g = ctx.createRadialGradient(128,128,30,128,128,120);
+      g.addColorStop(0, highlight ? '#fff8ff' : '#ffe6fd');
+      g.addColorStop(0.65, highlight ? '#d200ff' : '#a200c8');
+      g.addColorStop(1, highlight ? '#3d0047' : '#12001a');
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,256,256);
+      // Glow para la palabra
+      ctx.font = highlight ? 'bold 48px sans-serif' : 'bold 38px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = highlight ? "#fff0fc" : "#d200ff";
+      ctx.shadowBlur = highlight ? 22 : 12;
+      ctx.fillStyle = highlight ? '#fff' : '#ffe94c';
+      ctx.fillText(label, 128, 128);
+      // Bordes brillantes
+      ctx.lineWidth = 8;
+      ctx.strokeStyle = highlight ? "#fff" : "#d200ff";
+      ctx.shadowBlur = 0;
+      ctx.strokeRect(8, 8, 240, 240);
+      const tex = new THREE.CanvasTexture(c);
+      return new THREE.MeshStandardMaterial({
+        map: tex,
+        color: 0xffffff,
+        emissive: highlight ? new THREE.Color(0xd200ff) : new THREE.Color(0x1a0047),
+        emissiveIntensity: highlight ? 0.66 : 0.18,
+        metalness: 0.25,
+        roughness: 0.45,
+        side: THREE.DoubleSide
+      });
+    }
+    const labels = ['Beso', 'Bailecito', 'Copa', 'Pico', 'Chupito', 'Instagram'];
+    function createDiceMaterials(highlightIdx = -1) {
+      return labels.map((l, i) => makeDiceMaterial(l, i === highlightIdx));
+    }
+    let cube = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2), createDiceMaterials());
+    cube.castShadow = true;
+    cube.receiveShadow = false;
+    cube.position.y = 0.3;
+    scene.add(cube);
+
+    const faceNormals = [
+      new THREE.Vector3(1, 0, 0),
+      new THREE.Vector3(-1, 0, 0),
+      new THREE.Vector3(0, 1, 0),
+      new THREE.Vector3(0, -1, 0),
+      new THREE.Vector3(0, 0, 1),
+      new THREE.Vector3(0, 0, -1),
+    ];
+
+    const clock = new THREE.Clock();
+    let baseY = cube.position.y;
+    let selectedFace = 0;
+    let isRolling = false;
+    let rollStart = 0;
+    const rollDuration = 2.2;
+    let initialRot = new THREE.Euler();
+    let finalRot = new THREE.Euler();
+
+    function getRotationToFace(normal, cameraPos) {
+      const dir = cameraPos.clone().sub(cube.position).normalize();
+      const q = new THREE.Quaternion().setFromUnitVectors(normal, dir);
+      return new THREE.Euler().setFromQuaternion(q);
+    }
+
+    function vibrarPequena() {
+      try { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(50); } catch(e){}
+    }
+    function vibrarGrande() {
+      try { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]); } catch(e){}
+    }
+    function playSound() {
+      const audio = document.getElementById('result-sound');
+      if(audio) {
+        audio.currentTime = 0;
+        audio.play();
+      }
+    }
+
+    function lanzarDado() {
+      if (isRolling) return;
+      vibrarPequena();
+      cube.material = createDiceMaterials(-1);
+      cube.material.needsUpdate = true;
+      document.getElementById('info').textContent = "Tira el dado...";
+      selectedFace = Math.floor(Math.random() * 6);
+      finalRot = getRotationToFace(faceNormals[selectedFace], camera.position);
+      initialRot = cube.rotation.clone();
+      rollStart = clock.getElapsedTime();
+      isRolling = true;
+    }
+    window.addEventListener('click', function(e){
+      vibrarPequena();
+      lanzarDado();
+    });
+    window.addEventListener('touchstart', function(e) {
+      if(e.touches.length === 1){
+        vibrarPequena();
+        lanzarDado();
+      }
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      discoLights[0].position.x = -3 + Math.sin(t*1.6)*2;
+      discoLights[0].position.z = 2 + Math.cos(t*1.9)*2;
+      discoLights[1].position.x = 3 + Math.cos(t*2.1)*2;
+      discoLights[1].position.z = -2 + Math.sin(t*1.3)*2;
+      discoLights[2].position.y = 4 + Math.sin(t*2.5)*0.8;
+
+      cube.position.y = baseY + Math.sin(t * 2.8) * 0.18;
+      if (isRolling) {
+        const elapsed = t - rollStart;
+        const p = Math.min(elapsed / rollDuration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        cube.rotation.x = initialRot.x + (finalRot.x - initialRot.x) * ease + 4 * Math.PI * (1 - ease);
+        cube.rotation.y = initialRot.y + (finalRot.y - initialRot.y) * ease + 4 * Math.PI * (1 - ease);
+        cube.rotation.z = initialRot.z + (finalRot.z - initialRot.z) * ease + 2 * Math.PI * (1 - ease);
+        if (p >= 1) {
+          isRolling = false;
+          document.getElementById('info').textContent = `Te tocó: ${labels[selectedFace]}`;
+          cube.material = createDiceMaterials(selectedFace);
+          cube.material.needsUpdate = true;
+          cube.rotation.copy(finalRot);
+
+          vibrarGrande();
+          playSound();
+        }
+      }
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
   </script>
 </body>
 </html>
