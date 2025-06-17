@@ -33,6 +33,7 @@
       pointer-events: none;
       font-weight: bold;
     }
+
     h2 {
       position: absolute;
       top: 10vw;
@@ -91,13 +92,13 @@
       return discoWallTexture;
     }
 
-    // Cámara: esquina del suelo alineada con el centro visual, dado más abajo
+    // Cámara: esquina del suelo alineada con el centro visual, dado más centrado
     const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.set(4, 3.7, 4);
-    camera.lookAt(0, -1.8, 0);
+    camera.lookAt(0, 0.05, 0);
 
     // Renderer
-    const renderer = new THREE.WebGLRenderer({antialias: true});
+    const renderer = new THREE.WebGLRenderer({antialias: true, alpha: false});
     renderer.setClearColor(0x150024);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
@@ -105,11 +106,11 @@
     document.body.appendChild(renderer.domElement);
 
     // Luces de discoteca
-    scene.add(new THREE.AmbientLight(0x6600cc, 0.35));
+    scene.add(new THREE.AmbientLight(0x6600cc, 0.37));
     const discoLights = [
-      new THREE.PointLight(0xff00cc, 1.2, 8, 2), // rosa
-      new THREE.PointLight(0x00ffd0, 1.1, 8, 2), // verde-azul
-      new THREE.PointLight(0xffff00, 0.7, 8, 2), // amarillo
+      new THREE.PointLight(0xff00cc, 1.3, 8, 2), // rosa
+      new THREE.PointLight(0x00ffd0, 1.2, 8, 2), // verde-azul
+      new THREE.PointLight(0xffff00, 0.8, 8, 2), // amarillo
     ];
     discoLights[0].position.set(-3, 3, 2);
     discoLights[1].position.set(3, 3, -2);
@@ -133,7 +134,7 @@
     const floor = new THREE.Mesh(floorGeo, floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.rotation.z = Math.PI / 4; // esquina alineada
-    floor.position.y = -1.8;
+    floor.position.y = -1.25;
     floor.receiveShadow = true;
     scene.add(floor);
 
@@ -155,70 +156,79 @@
 
     // Sombra del dado
     const shadowPlaneGeo = new THREE.PlaneGeometry(2, 2);
-    const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.32 });
+    const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.34 });
     const shadowPlane = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
     shadowPlane.rotation.x = -Math.PI / 2;
-    shadowPlane.position.y = -1.77;
+    shadowPlane.position.y = -1.22;
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
 
-    // Dado con diseño chulo y palabras MUY visibles
-    function makeDiceMaterial(label, highlight = false) {
+    // Colores para caras del dado (cada cara diferente)
+    const diceFaceColors = [
+      "#00ffe5", "#ffea00", "#ff5eec", "#ff0054", "#24ff00", "#0092ff"
+    ];
+    const diceFaceNeonGlows = [
+      "#00fff7", "#fff200", "#ffb3fd", "#ff597a", "#8dff73", "#5cc7ff"
+    ];
+
+    // Dado con palabras MUY visibles y neon glow
+    function makeDiceMaterial(label, highlight = false, faceIndex = 0) {
       const c = document.createElement('canvas');
-      c.width = c.height = 256;
+      c.width = c.height = 512;
       const ctx = c.getContext('2d');
-      // Fondo degradado fuerte
-      const g = ctx.createLinearGradient(0, 0, 256, 256);
+
+      // Fondo degradado fuerte, color único para cada cara
+      const g = ctx.createLinearGradient(0, 0, 512, 512);
       if (highlight) {
         g.addColorStop(0, "#fff");
-        g.addColorStop(0.35, "#e200ff");
-        g.addColorStop(1, "#420044");
+        g.addColorStop(0.30, diceFaceNeonGlows[faceIndex]);
+        g.addColorStop(1, diceFaceColors[faceIndex]);
       } else {
-        g.addColorStop(0, "#ffe94c");
-        g.addColorStop(0.3, "#d200ff");
+        g.addColorStop(0, diceFaceColors[faceIndex]);
+        g.addColorStop(0.25, "#222");
         g.addColorStop(1, "#23006d");
       }
       ctx.fillStyle = g;
-      ctx.fillRect(0,0,256,256);
+      ctx.fillRect(0,0,512,512);
 
-      // Palabra: tipo disco, muy grande y con borde
+      // Palabra: tipo disco, muy grande, con borde grueso y glow fuerte/neon
       ctx.save();
-      ctx.font = highlight ? 'bold 58px Segoe UI, Arial, sans-serif' : 'bold 48px Segoe UI, Arial, sans-serif';
+      ctx.font = highlight ? 'bold 92px Segoe UI, Arial, sans-serif' : 'bold 76px Segoe UI, Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       if (highlight) {
-        ctx.shadowColor = '#fff';
-        ctx.shadowBlur = 22;
-        ctx.lineWidth = 7;
-        ctx.strokeStyle = "#ff00e0";
+        ctx.shadowColor = diceFaceNeonGlows[faceIndex];
+        ctx.shadowBlur = 60;
+        ctx.lineWidth = 14;
+        ctx.strokeStyle = "#fff";
+        ctx.strokeText(label, 256, 270);
         ctx.fillStyle = "#fff";
-        ctx.strokeText(label, 128, 132);
-        ctx.fillText(label, 128, 132);
+        ctx.fillText(label, 256, 270);
       } else {
-        ctx.shadowColor = "#000";
-        ctx.shadowBlur = 0;
-        ctx.lineWidth = 7;
+        ctx.shadowColor = diceFaceNeonGlows[faceIndex];
+        ctx.shadowBlur = 30;
+        ctx.lineWidth = 10;
         ctx.strokeStyle = "#000";
+        ctx.strokeText(label, 256, 270);
         ctx.fillStyle = "#fff";
-        ctx.strokeText(label, 128, 132);
-        ctx.fillStyle = "#ffe94c";
-        ctx.fillText(label, 128, 132);
+        ctx.fillText(label, 256, 270);
       }
       ctx.restore();
 
       // Bordes brillantes
-      ctx.lineWidth = 8;
-      ctx.strokeStyle = highlight ? "#fff" : "#d200ff";
+      ctx.lineWidth = 18;
+      ctx.strokeStyle = highlight ? "#fff" : diceFaceNeonGlows[faceIndex];
       ctx.shadowBlur = 0;
-      ctx.strokeRect(8, 8, 240, 240);
+      ctx.strokeRect(16, 16, 480, 480);
+
       const tex = new THREE.CanvasTexture(c);
       return new THREE.MeshStandardMaterial({
         map: tex,
         color: 0xffffff,
-        emissive: highlight ? new THREE.Color(0xec03ff) : new THREE.Color(0x1a0047),
-        emissiveIntensity: highlight ? 0.85 : 0.18,
-        metalness: 0.28,
-        roughness: 0.39,
+        emissive: highlight ? new THREE.Color(diceFaceNeonGlows[faceIndex]) : new THREE.Color("#181828"),
+        emissiveIntensity: highlight ? 1 : 0.13,
+        metalness: highlight ? 0.38 : 0.20,
+        roughness: 0.32,
         side: THREE.DoubleSide
       });
     }
@@ -226,13 +236,13 @@
     const labels = ['Beso', 'Bailecito', 'Copa', 'Pico', 'Chupito', 'Instagram'];
 
     function createDiceMaterials(highlightIdx = -1) {
-      return labels.map((l, i) => makeDiceMaterial(l, i === highlightIdx));
+      return labels.map((l, i) => makeDiceMaterial(l, highlightIdx === i, i));
     }
     let cube = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2), createDiceMaterials());
     cube.castShadow = true;
     cube.receiveShadow = false;
-    // BAJAMOS EL DADO
-    cube.position.y = -0.55;
+    // Centramos el dado
+    cube.position.y = 0.13;
     scene.add(cube);
 
     const faceNormals = [
