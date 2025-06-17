@@ -61,7 +61,7 @@
       letter-spacing: 2px;
       font-weight: bold;
       cursor: pointer;
-      transition: transform .11s cubic-bezier(.48,1.8,.64,1), box-shadow .14s cubic-bezier(.48,1.8,.64,1);
+      transition: transform .1s cubic-bezier(.4,1,.4,1), box-shadow .1s cubic-bezier(.4,1,.4,1);
       outline: none;
       z-index: 1;
       overflow: visible;
@@ -71,8 +71,8 @@
         0 0 5px #fff, 0 0 12px #d200ff;
     }
     .neon-btn:active {
-      transform: scale(0.98);
-      box-shadow: 0 0 40px #d200ff, 0 0 80px #a200c8 inset;
+      transform: scale(0.96);
+      box-shadow: 0 0 22px #d200ff, 0 0 42px #a200c8 inset;
     }
     .neon-btn.copas {
       box-shadow: 0 0 14px #009aff, 0 0 32px #00e3ff inset;
@@ -80,7 +80,7 @@
       background: #06122a;
     }
     .neon-btn.copas:active {
-      box-shadow: 0 0 40px #00e3ff, 0 0 80px #009aff inset;
+      box-shadow: 0 0 22px #00e3ff, 0 0 42px #009aff inset;
     }
     .neon-btn.fuego {
       box-shadow: 0 0 18px #ffb300, 0 0 42px #ff2e00 inset;
@@ -90,7 +90,7 @@
       border: 2px solid #ff5e00;
     }
     .neon-btn.fuego:active {
-      box-shadow: 0 0 44px #ffb300, 0 0 100px #ff2e00 inset;
+      box-shadow: 0 0 22px #ffb300, 0 0 42px #ff2e00 inset;
     }
     .btn-img {
       position: absolute;
@@ -102,51 +102,6 @@
       z-index: 2;
       pointer-events: none;
       user-select: none;
-    }
-    /* Morphin Transition */
-    .morphin-wrap {
-      position: fixed;
-      pointer-events: none;
-      width: 100vw;
-      height: 100vh;
-      top: 0;
-      left: 0;
-      z-index: 2000;
-      display: block;
-    }
-    .morphin-svg {
-      width: 100vw;
-      height: 100vh;
-      display: block;
-      pointer-events: none;
-    }
-    body.is-loading::before {
-      content: '';
-      position: fixed;
-      z-index: 3000;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #0d0016;
-    }
-    body.is-loading::after {
-      content: '';
-      position: fixed;
-      z-index: 3100;
-      top: 50%;
-      left: 50%;
-      width: 50px;
-      height: 50px;
-      margin: -25px 0 0 -25px;
-      pointer-events: none;
-      background: #3d947b;
-      border-radius: 50%;
-      animation: loaderAnim 0.5s ease infinite alternate forwards;
-    }
-    @keyframes loaderAnim {
-      0% { transform: scale3d(0.5,0.5,1);}
-      100% { transform: scale3d(1,1,1);}
     }
     /* Responsive */
     @media (max-width: 600px) {
@@ -163,107 +118,56 @@
     }
   </style>
 </head>
-<body class="is-loading">
+<body>
   <h1>DADOS TRAVIESOS</h1>
   <div class="buttons-container">
     <!-- Botón 1: clásico -->
-    <a class="neon-btn js-trigger-transform" href="dado1.html">Dado clásico</a>
+    <a class="neon-btn js-sound-btn" href="dado3.html">Dado clásico</a>
 
     <!-- Botón 2: copas/cubatas con imagen -->
-    <a class="neon-btn copas js-trigger-transform" href="dado2.html">
+    <a class="neon-btn copas js-sound-btn" href="dado3.html">
       <img src="https://cdn-icons-png.flaticon.com/512/2738/2738897.png" alt="cubata" class="btn-img" />
       Dado copas
     </a>
 
     <!-- Botón 3: fuego con imagen -->
-    <a class="neon-btn fuego js-trigger-transform" href="dado-extremo.html" id="btn-fuego">
+    <a class="neon-btn fuego js-sound-btn" href="dado3.html" id="btn-fuego">
       <img src="https://cdn-icons-png.flaticon.com/512/616/616494.png" alt="fuego" class="btn-img" />
       Dado extremo
     </a>
   </div>
-  <div class="morphin-wrap" style="display:block;">
-    <svg class="morphin-svg" width="100%" height="100vh" preserveAspectRatio="none" viewBox="0 0 1920 1080">
-      <path fill="#0d0016"
-        d="M0,1270.2c0,0,45.2,65.9,148.8,59.8s188.6-143.3,288.2-177.1c99.5-33.9,186.4-29.8,294.4,35.9 c108,65.7,194.8,95.4,315.5,65.7c120.7-29.6,186.4-29.6,285.9,8.5c99.5,38.1,166.8,126.5,271.1,108c95.3-16.9,121-90.5,192.7-194.8 c47.5-69.1,123.5-74.1,123.5-74.1V0H0V1270.2z" >
-      </path>
-    </svg>
-  </div>
-  <audio id="tick-sound" src="https://cdn.pixabay.com/audio/2022/07/26/audio_124b3e5000.mp3"></audio>
-  <!-- GSAP & MorphSVG -->
-  <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
-  <script src="https://assets.codepen.io/16327/MorphSVGPlugin3.min.js"></script>
+  <!-- Sonido personalizado para botones (pon tu mp3 preferido aquí) -->
+  <audio id="tick-sound" src="tick.mp3"></audio>
   <script>
-    {
-      // Check URL Valid
-      const isValidUrl = string => /(\.\/)|(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/.test(string) 
-        || /^([a-zA-Z0-9-_]+\.html?)$/.test(string);
-
-      const Morphin = {};
-      Morphin.shape = document.querySelector('.morphin-svg');
-      Morphin.path = Morphin.shape.querySelector('path');
-      Morphin.transfertime = 1; //second
-
-      // Target for trigger transform
-      Morphin.triggers = document.getElementsByClassName('js-trigger-transform');
-      
-      Array.prototype.forEach.call(Morphin.triggers, function (item) {
-        item.addEventListener('click', event => {
-          event.preventDefault();
-          // Sonido tick
-          const tick = document.getElementById('tick-sound');
-          if(tick) { tick.currentTime = 0; tick.play(); }
-          let url = isValidUrl(event.currentTarget.href) ? event.currentTarget.href : undefined;
-          Morphin_show(url);
-        });
-        item.addEventListener('touchend', event => {
-          event.preventDefault();
-          const tick = document.getElementById('tick-sound');
-          if(tick) { tick.currentTime = 0; tick.play(); }
-          let url = isValidUrl(event.currentTarget.href) ? event.currentTarget.href : undefined;
-          Morphin_show(url);
-        });
+    // Transición sencilla: fade out + sonido y luego redirección
+    document.querySelectorAll('.js-sound-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Sonido
+        const audio = document.getElementById('tick-sound');
+        if(audio) { audio.currentTime = 0; audio.play(); }
+        // Fade out sencillo
+        document.body.style.transition = "opacity 0.32s cubic-bezier(.7,0,.7,1)";
+        document.body.style.opacity = "0";
+        setTimeout(() => {
+          window.location.href = btn.href;
+        }, 320);
       });
-      
-      const init_morphin = () => {
-        setTimeout( () => { document.body.classList.remove('is-loading'); Morphin_hide(); }, 600 );
-      };
-
-      let is_morphin_loaded;
-
-      const Morphin_hide = () => {
-        if ( is_morphin_loaded ) return;
-        is_morphin_loaded = true;
-        let tl = gsap.timeline({
-          onComplete: function() {
-            document.querySelector('.morphin-wrap').style.display = 'none';
-          }
-        });
-        let end_path = "M0-18.1c0,0,117.3,6.1,221,0s190.7,3.5,264.3,0c53.4-2.6,145-0.1,271.4,0c59.3,0.1,208.2,0,332.5,0 c76.2,0,120.1-3,226.6,0c74.1,2.1,150.4,0,243.5,0c96.8,0,175.8,8.5,230.8,0c55.7-8.6,129.8,0,129.8,0V0H0V-18.1z";
-        tl.to(Morphin.path, {morphSVG:end_path, duration: Morphin.transfertime, ease: 'power2'}, 0);
-      };
-
-      const Morphin_show = (url) => {
-        is_morphin_loaded = false;
-        document.querySelector('.morphin-wrap').style.display = 'block';
-        let tl = gsap.timeline({onComplete: function(){ func_chgurl(url); }});
-        let end_path = "M0,1270.2c0,0,45.2,65.9,148.8,59.8s188.6-143.3,288.2-177.1c99.5-33.9,186.4-29.8,294.4,35.9 c108,65.7,194.8,95.4,315.5,65.7c120.7-29.6,186.4-29.6,285.9,8.5c99.5,38.1,166.8,126.5,271.1,108c95.3-16.9,121-90.5,192.7-194.8 c47.5-69.1,123.5-74.1,123.5-74.1V0H0V1270.2z";
-        tl.to(Morphin.path, {morphSVG:end_path, duration: Morphin.transfertime, ease: 'power3'}, 0);
-      };
-
-      function func_chgurl(url){
-        if(url !== undefined){
-          setTimeout(function () {
-            window.location.href = url;
-          }, Morphin.transfertime*1000+300);
-        }else{
-          setTimeout(function () {
-            Morphin_hide();
-          }, Morphin.transfertime*1000+1200);
-        }
-      }
-
-      init_morphin();
-    };
+      btn.addEventListener('touchend', function(e){
+        e.preventDefault();
+        // Sonido
+        const audio = document.getElementById('tick-sound');
+        if(audio) { audio.currentTime = 0; audio.play(); }
+        // Fade out sencillo
+        document.body.style.transition = "opacity 0.32s cubic-bezier(.7,0,.7,1)";
+        document.body.style.opacity = "0";
+        setTimeout(() => {
+          window.location.href = btn.href;
+        }, 320);
+      });
+    });
+    // Quita el fade inicial si quieres que la página entre sin transición
+    document.body.style.opacity = "1";
   </script>
 </body>
 </html>
