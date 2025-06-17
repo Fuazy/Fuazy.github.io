@@ -19,7 +19,7 @@
       text-align: center;
       z-index: 1;
       font-family: 'Segoe UI', 'Arial', sans-serif;
-      font-size: 6vw; /* grande y responsive */
+      font-size: 6vw;
       letter-spacing: 2px;
       color: #fff;
       text-shadow:
@@ -40,7 +40,7 @@
       text-align: center;
       z-index: 1;
       font-family: 'Segoe UI', 'Arial', sans-serif;
-      font-size: 4vw; /* grande y responsive */
+      font-size: 4vw;
       letter-spacing: 2px;
       color: #fff;
       text-shadow:
@@ -128,28 +128,36 @@
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
 
-    // Crear textura con texto amarillo y fondo morado
+    // Crear textura con texto normal y texto neón morado para la cara ganadora
     function makeTex(text, highlight = false) {
       const c = document.createElement('canvas');
       c.width = c.height = 256;
       const ctx = c.getContext('2d');
-      ctx.fillStyle = highlight ? '#f010e9' : '#f010e9';
-      ctx.shadowColor = highlight ? "#f010e9" : "#000";
-      ctx.shadowBlur = highlight ? 32 : 0;
+      // Fondo cara igual siempre
+      ctx.fillStyle = '#7d1ab8';
       ctx.fillRect(0, 0, 256, 256);
-      ctx.fillStyle = '#ffed00';
-      ctx.font = highlight ? 'bold 44px sans-serif' : 'bold 36px sans-serif';
+      ctx.font = highlight ? 'bold 48px sans-serif' : 'bold 36px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.shadowColor = highlight ? "#fff" : "#000";
-      ctx.shadowBlur = highlight ? 16 : 0;
+
+      if (highlight) {
+        // Efecto neón morado solo para el texto
+        ctx.shadowColor = '#d200ff';
+        ctx.shadowBlur = 32;
+        ctx.fillStyle = '#fff';
+      } else {
+        ctx.shadowColor = "#000";
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#ffe94c';
+      }
       ctx.fillText(text, 128, 128);
+
       const tex = new THREE.CanvasTexture(c);
       return new THREE.MeshStandardMaterial({
         map: tex,
-        color: 0xffffff,
-        emissive: highlight ? new THREE.Color(0xffe300) : new THREE.Color(0x000000),
-        emissiveIntensity: highlight ? 1 : 0,
+        color: 0xffffff, // Cara igual siempre
+        emissive: new THREE.Color(0x000000),
+        emissiveIntensity: 0,
         side: THREE.DoubleSide,
         transparent: false
       });
@@ -205,7 +213,6 @@
     }
     window.addEventListener('click', lanzarDado);
     window.addEventListener('touchstart', function(e) {
-      // Evita doble disparo en algunos navegadores
       if(e.touches.length === 1) lanzarDado();
     });
 
@@ -226,6 +233,11 @@
           cube.material = createMaterials(selectedFace);
           cube.material.needsUpdate = true;
           cube.rotation.copy(finalRot);
+
+          // Vibración móvil al salir resultado
+          if (window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate([80, 40, 80]);
+          }
         }
       }
       renderer.render(scene, camera);
