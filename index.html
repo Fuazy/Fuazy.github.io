@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>El dado travieso</title>
+  <style>
+    body, html { 
+      margin: 0; 
+      height: 100%; 
+      background: #111111; /* Negro mate */
+      color: #000000; 
+      overflow: hidden; 
+    }
+    #info {
+      position: absolute;
+      top: 30px;
+      width: 100%;
+      text-align: center;
+      z-index: 1;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      font-size: 2.2em;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow:
+        0 0 7px #d200ff,
+        0 0 10px #d200ff,
+        0 0 21px #d200ff,
+        0 0 42px #a200c8,
+        0 0 82px #7d1ab8;
+      /* Efecto neon morado */
+      filter: brightness(1.3);
+      user-select: none;
+    }
+
+    h2 {
+      position: absolute;
+      top: 70px;
+      width: 100%;
+      text-align: center;
+      z-index: 1;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      font-size: 1.2em;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow:
+        0 0 7px #d200ff,
+        0 0 10px #d200ff,
+        0 0 21px #d200ff,
+        0 0 42px #a200c8,
+        0 0 82px #7d1ab8;
+      /* Efecto neon morado */
+      filter: brightness(1.3);
+      user-select: none;
+    }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <div id="info">🔥 EL DADO TRAVIESO 🔥</div>
+  <h2>😈 Hecho por David Fouces 😈</h2>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script>
+    // Escena y cámara
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(2, 2.2, 2.5);
+    camera.lookAt(0, 0, 0);
+
+    // Renderer con fondo negro mate y sombras
+    const renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setClearColor(0x111111); // Negro mate
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(renderer.domElement);
+
+    // Luz principal blanca
+    const light = new THREE.DirectionalLight(0xffffff, 1.7);
+    light.position.set(3, 8, 3);
+    light.castShadow = true;
+    light.shadow.mapSize.width = 2048;
+    light.shadow.mapSize.height = 2048;
+    light.shadow.camera.near = 1;
+    light.shadow.camera.far = 20;
+    light.shadow.camera.left = -5;
+    light.shadow.camera.right = 5;
+    light.shadow.camera.top = 5;
+    light.shadow.camera.bottom = -5;
+    light.shadow.radius = 8;
+    scene.add(light);
+
+    // Luz ambiental blanca
+    scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+
+    // Plano para el suelo con textura (imagen de internet)
+    const groundGeo = new THREE.PlaneGeometry(10, 10);
+    const groundMat = new THREE.MeshPhongMaterial({ color: 0xffffff });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -2.2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    // Cargar la textura de la imagen para el suelo desde internet
+    const loader = new THREE.TextureLoader();
+    loader.load(
+      'https://i.imgur.com/NYD1107.jpeg', // Puedes cambiar por cualquier imagen pública
+      function(texture) {
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(1, 1);
+        ground.material.map = texture;
+        ground.material.color.set(0xffffff); // Asegura que no tiñe la textura
+        ground.material.needsUpdate = true;
+      },
+      undefined,
+      function(err) {
+        alert("No se pudo cargar la imagen de suelo desde internet.");
+      }
+    );
+
+    // Plano para la sombra, más pequeño y justo encima del suelo
+    const shadowPlaneGeo = new THREE.PlaneGeometry(2, 2);
+    const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.32 });
+    const shadowPlane = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.y = -2.18; // Un poco por encima del suelo
+    shadowPlane.receiveShadow = true;
+    scene.add(shadowPlane);
+
+    // Crear textura con texto amarillo y fondo morado
+    function makeTex(text, highlight = false) {
+      const c = document.createElement('canvas');
+      c.width = c.height = 256;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = highlight ? '#f010e9' : '#f010e9';
+      ctx.shadowColor = highlight ? "#f010e9" : "#000";
+      ctx.shadowBlur = highlight ? 32 : 0;
+      ctx.fillRect(0, 0, 256, 256);
+      ctx.fillStyle = '#ffed00';
+      ctx.font = highlight ? 'bold 44px sans-serif' : 'bold 36px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = highlight ? "#fff" : "#000";
+      ctx.shadowBlur = highlight ? 16 : 0;
+      ctx.fillText(text, 128, 128);
+      const tex = new THREE.CanvasTexture(c);
+      return new THREE.MeshStandardMaterial({
+        map: tex,
+        color: 0xffffff,
+        emissive: highlight ? new THREE.Color(0xffe300) : new THREE.Color(0x000000),
+        emissiveIntensity: highlight ? 1 : 0,
+        side: THREE.DoubleSide,
+        transparent: false
+      });
+    }
+
+    const labels = ['Beso', 'Bailecito', 'Copa', 'Pico', 'Chupito', 'Instagram'];
+
+    function createMaterials(highlightIndex = -1) {
+      return labels.map((label, idx) => makeTex(label, idx === highlightIndex));
+    }
+
+    let cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), createMaterials());
+    cube.castShadow = true;
+    cube.receiveShadow = false;
+    scene.add(cube);
+
+    const faceNormals = [
+      new THREE.Vector3(1, 0, 0),
+      new THREE.Vector3(-1, 0, 0),
+      new THREE.Vector3(0, 1, 0),
+      new THREE.Vector3(0, -1, 0),
+      new THREE.Vector3(0, 0, 1),
+      new THREE.Vector3(0, 0, -1),
+    ];
+
+    const clock = new THREE.Clock();
+    const baseY = 0;
+
+    let selectedFace = 0;
+    let isRolling = false;
+    let rollStart = 0;
+    const rollDuration = 2.5;
+    let initialRot = new THREE.Euler();
+    let finalRot = new THREE.Euler();
+
+    function getRotationToFace(normal, cameraPos) {
+      const dir = cameraPos.clone().sub(cube.position).normalize();
+      const q = new THREE.Quaternion().setFromUnitVectors(normal, dir);
+      return new THREE.Euler().setFromQuaternion(q);
+    }
+
+    window.addEventListener('click', () => {
+      if (isRolling) return;
+      cube.material = createMaterials(-1);
+      cube.material.needsUpdate = true;
+      document.getElementById('info').textContent = "Tira el dado...";
+      selectedFace = Math.floor(Math.random() * 6);
+      finalRot = getRotationToFace(faceNormals[selectedFace], camera.position);
+      initialRot = cube.rotation.clone();
+      rollStart = clock.getElapsedTime();
+      isRolling = true;
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+      cube.position.y = baseY + Math.sin(t * 2.2) * 0.11;
+      if (isRolling) {
+        const elapsed = t - rollStart;
+        const p = Math.min(elapsed / rollDuration, 1);
+        const ease = 1 - Math.pow(1 - p, 3);
+        cube.rotation.x = initialRot.x + (finalRot.x - initialRot.x) * ease + 4 * Math.PI * (1 - ease);
+        cube.rotation.y = initialRot.y + (finalRot.y - initialRot.y) * ease + 4 * Math.PI * (1 - ease);
+        cube.rotation.z = initialRot.z + (finalRot.z - initialRot.z) * ease + 2 * Math.PI * (1 - ease);
+        if (p >= 1) {
+          isRolling = false;
+          document.getElementById('info').textContent = `Te tocó: ${labels[selectedFace]}`;
+          cube.material = createMaterials(selectedFace);
+          cube.material.needsUpdate = true;
+          cube.rotation.copy(finalRot);
+        }
+      }
+      renderer.render(scene, camera);
+    }
+
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
