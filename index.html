@@ -54,91 +54,15 @@
       pointer-events: none;
     }
     canvas { display: block; }
-    #fire-canvas {
-      pointer-events: none;
-      position: absolute;
-      left: 0; top: 0;
-      width: 100vw; height: 100vh;
-      z-index: 1;
-    }
   </style>
 </head>
 <body>
   <div id="info">🔥 EL DADO TRAVIESO 🔥</div>
   <h2>😈 Hecho por David Fouces 😈</h2>
+  <!-- Audio actualizado -->
   <audio id="result-sound" src="https://www.myinstants.com/media/sounds/hub-intro.mp3"></audio>
-  <canvas id="fire-canvas"></canvas>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script>
-    // --- FIRE PARTICLE EFFECT (simple, overlay canvas) ---
-    const fireCanvas = document.getElementById('fire-canvas');
-    const fireCtx = fireCanvas.getContext('2d');
-    let fireParticles = [];
-    let fireEnabled = false;
-
-    function resizeFireCanvas() {
-      fireCanvas.width = window.innerWidth;
-      fireCanvas.height = window.innerHeight;
-    }
-    resizeFireCanvas();
-    window.addEventListener('resize', resizeFireCanvas);
-
-    function rand(a, b) { return a + Math.random() * (b-a);}
-    function addFire(centerX, centerY, amount=10) {
-      for(let i=0;i<amount;i++) {
-        fireParticles.push({
-          x: centerX + rand(-30,30),
-          y: centerY + rand(5,40),
-          vx: rand(-0.5,0.5),
-          vy: rand(-3.5,-1.5),
-          size: rand(18,28),
-          alpha: 1,
-          color: `rgba(${rand(220,255)},${rand(80,160)},0,`
-        });
-      }
-    }
-    function drawFire() {
-      fireCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height);
-      fireParticles = fireParticles.filter(p=>p.alpha>0.05);
-      for(let p of fireParticles) {
-        fireCtx.beginPath();
-        fireCtx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-        fireCtx.fillStyle = p.color+(p.alpha)+")";
-        fireCtx.globalAlpha = p.alpha;
-        fireCtx.fill();
-        fireCtx.globalAlpha=1;
-        // Animate
-        p.x += p.vx;
-        p.y += p.vy;
-        p.size *= 0.98;
-        p.alpha *= 0.94;
-      }
-    }
-    function animateFire() {
-      if (fireEnabled) {
-        // Centra el fuego sobre el dado en pantalla
-        let cubePos = getCubeScreenPosition();
-        if (cubePos) addFire(cubePos.x, cubePos.y, 5);
-        drawFire();
-      } else {
-        fireCtx.clearRect(0,0,fireCanvas.width,fireCanvas.height);
-      }
-      requestAnimationFrame(animateFire);
-    }
-    animateFire();
-
-    // Utilidad para centrar fuego sobre el dado
-    function getCubeScreenPosition() {
-      if (!window.cube) return null;
-      // Centrar en el centro del cubo
-      let vector = new THREE.Vector3(0, 0, 0.5); // delante del cubo
-      vector.applyMatrix4(cube.matrixWorld);
-      vector.project(camera);
-      let x = (vector.x * 0.5 + 0.5) * window.innerWidth;
-      let y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
-      return {x, y};
-    }
-
     // --- THREE.JS SCENE ---
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -248,7 +172,7 @@
     }
 
     let cube = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), createMaterials());
-    window.cube = cube; // Para el fuego
+    window.cube = cube; // Para referencia
     cube.castShadow = true;
     cube.receiveShadow = false;
     scene.add(cube);
@@ -278,16 +202,12 @@
       return new THREE.Euler().setFromQuaternion(q);
     }
 
-    // Vibraciones y sonido
+    // Vibraciones y sonido (llamadas directas desde eventos para iOS)
     function vibrarPequena() {
-      if (window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate(50);
-      }
+      try { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate(50); } catch(e){}
     }
     function vibrarGrande() {
-      if (window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate([300, 100, 150]);
-      }
+      try { if (window.navigator && window.navigator.vibrate) window.navigator.vibrate([200, 100, 200]); } catch(e){}
     }
     function playSound() {
       const audio = document.getElementById('result-sound');
@@ -301,7 +221,6 @@
     function lanzarDado() {
       if (isRolling) return;
       vibrarPequena();
-      fireEnabled = true; // Empieza efecto fuego
       cube.material = createMaterials(-1);
       cube.material.needsUpdate = true;
       document.getElementById('info').textContent = "Tira el dado...";
@@ -311,9 +230,15 @@
       rollStart = clock.getElapsedTime();
       isRolling = true;
     }
-    window.addEventListener('click', lanzarDado);
+    window.addEventListener('click', function(e){
+      vibrarPequena(); // <= para iPhone vibración directa de evento
+      lanzarDado();
+    });
     window.addEventListener('touchstart', function(e) {
-      if(e.touches.length === 1) lanzarDado();
+      if(e.touches.length === 1){
+        vibrarPequena(); // <= para iPhone vibración directa de evento
+        lanzarDado();
+      }
     });
 
     function animate() {
@@ -336,7 +261,6 @@
 
           vibrarGrande();
           playSound();
-          fireEnabled = false; // Para el fuego cuando sale resultado
         }
       }
       renderer.render(scene, camera);
@@ -348,7 +272,6 @@
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-      resizeFireCanvas();
     });
   </script>
 </body>
