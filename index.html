@@ -62,6 +62,8 @@
   <h2>😈 Hecho por David Fouces 😈</h2>
   <audio id="result-sound" src="https://www.myinstants.com/media/sounds/hub-intro.mp3"></audio>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/FontLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/geometries/TextGeometry.js"></script>
   <script>
     // --- SCENE & CAMERA ---
     const scene = new THREE.Scene();
@@ -171,81 +173,70 @@
       "#00fff7", "#fff200", "#ffb3fd", "#ff597a", "#8dff73", "#5cc7ff"
     ];
 
-    // Dado con palabras MUY visibles y neon glow
-    function makeDiceMaterial(label, highlight = false, faceIndex = 0) {
-      const c = document.createElement('canvas');
-      c.width = c.height = 512;
-      const ctx = c.getContext('2d');
+    // Dado base (color mate liso, no cambia)
+    const diceBaseMaterial = new THREE.MeshStandardMaterial({
+      color: 0x2c0047,
+      metalness: 0.28,
+      roughness: 0.5,
+      emissive: 0x0e0020,
+      emissiveIntensity: 0.18
+    });
+    const dice = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2), [
+      diceBaseMaterial, diceBaseMaterial, diceBaseMaterial,
+      diceBaseMaterial, diceBaseMaterial, diceBaseMaterial
+    ]);
+    dice.castShadow = true;
+    dice.receiveShadow = false;
+    dice.position.y = 0.13;
+    scene.add(dice);
 
-      // Fondo degradado fuerte, color único para cada cara
-      const g = ctx.createLinearGradient(0, 0, 512, 512);
-      if (highlight) {
-        g.addColorStop(0, "#fff");
-        g.addColorStop(0.30, diceFaceNeonGlows[faceIndex]);
-        g.addColorStop(1, diceFaceColors[faceIndex]);
-      } else {
-        g.addColorStop(0, diceFaceColors[faceIndex]);
-        g.addColorStop(0.25, "#222");
-        g.addColorStop(1, "#23006d");
-      }
-      ctx.fillStyle = g;
-      ctx.fillRect(0,0,512,512);
-
-      // Palabra: para GANADORA, negro muy grande con borde NEÓN blanco/colores, para resto blanco con glow
-      ctx.save();
-      ctx.font = highlight ? 'bold 102px Segoe UI, Arial, sans-serif' : 'bold 76px Segoe UI, Arial, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      if (highlight) {
-        // Fondo claro, palabra negra con borde blanco y glow neón
-        ctx.shadowColor = diceFaceNeonGlows[faceIndex];
-        ctx.shadowBlur = 60;
-        ctx.lineWidth = 18;
-        ctx.strokeStyle = "#fff";
-        ctx.strokeText(label, 256, 270);
-        ctx.fillStyle = "#19191a";
-        ctx.fillText(label, 256, 270);
-      } else {
-        ctx.shadowColor = diceFaceNeonGlows[faceIndex];
-        ctx.shadowBlur = 30;
-        ctx.lineWidth = 10;
-        ctx.strokeStyle = "#000";
-        ctx.strokeText(label, 256, 270);
-        ctx.fillStyle = "#fff";
-        ctx.fillText(label, 256, 270);
-      }
-      ctx.restore();
-
-      // Bordes brillantes
-      ctx.lineWidth = 18;
-      ctx.strokeStyle = highlight ? "#fff" : diceFaceNeonGlows[faceIndex];
-      ctx.shadowBlur = 0;
-      ctx.strokeRect(16, 16, 480, 480);
-
-      const tex = new THREE.CanvasTexture(c);
-      return new THREE.MeshStandardMaterial({
-        map: tex,
-        color: 0xffffff,
-        emissive: highlight ? new THREE.Color(diceFaceNeonGlows[faceIndex]) : new THREE.Color("#181828"),
-        emissiveIntensity: highlight ? 1 : 0.13,
-        metalness: highlight ? 0.38 : 0.20,
-        roughness: 0.32,
-        side: THREE.DoubleSide
-      });
-    }
-
+    // Texto en cada cara (como Mesh independientes)
     const labels = ['Beso', 'Bailecito', 'Copa', 'Pico', 'Chupito', 'Instagram'];
+    const facePositions = [
+      [0.61, 0, 0, 0, -Math.PI/2, 0],     // +X
+      [-0.61, 0, 0, 0, Math.PI/2, 0],     // -X
+      [0, 0.61, 0, -Math.PI/2, 0, 0],     // +Y
+      [0, -0.61, 0, Math.PI/2, 0, 0],     // -Y
+      [0, 0, 0.61, 0, 0, 0],              // +Z
+      [0, 0, -0.61, 0, Math.PI, 0],       // -Z
+    ];
+    let textMeshes = [];
+    let fontLoaded = false;
 
-    function createDiceMaterials(highlightIdx = -1) {
-      return labels.map((l, i) => makeDiceMaterial(l, highlightIdx === i, i));
-    }
-    let cube = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2), createDiceMaterials());
-    cube.castShadow = true;
-    cube.receiveShadow = false;
-    // Centramos el dado
-    cube.position.y = 0.13;
-    scene.add(cube);
+    const loader = new THREE.FontLoader();
+    loader.load('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json', function(font) {
+      fontLoaded = true;
+      for (let i = 0; i < 6; i++) {
+        const textGeo = new THREE.TextGeometry(labels[i], {
+          font: font,
+          size: 0.22,
+          height: 0.07,
+          curveSegments: 4,
+          bevelEnabled: true,
+          bevelThickness: 0.018,
+          bevelSize: 0.018,
+          bevelSegments: 2,
+        });
+        // Material base: blanco con glow neón
+        const textMat = new THREE.MeshBasicMaterial({
+          color: 0xffffff
+        });
+        const textMesh = new THREE.Mesh(textGeo, textMat);
+        // Centrado
+        textGeo.computeBoundingBox();
+        const center = textGeo.boundingBox.getCenter(new THREE.Vector3());
+        textMesh.position.x = facePositions[i][0] - center.x * Math.cos(facePositions[i][4]);
+        textMesh.position.y = facePositions[i][1] - center.y;
+        textMesh.position.z = facePositions[i][2] - center.z;
+        textMesh.rotation.set(facePositions[i][3], facePositions[i][4], facePositions[i][5]);
+        textMesh.material.color.set(diceFaceColors[i]);
+        textMesh.material.needsUpdate = true;
+        textMeshes.push(textMesh);
+        scene.add(textMesh);
+      }
+    });
 
+    // Animación y lógica de tirada
     const faceNormals = [
       new THREE.Vector3(1, 0, 0),
       new THREE.Vector3(-1, 0, 0),
@@ -256,7 +247,7 @@
     ];
 
     const clock = new THREE.Clock();
-    let baseY = cube.position.y;
+    let baseY = dice.position.y;
     let selectedFace = 0;
     let isRolling = false;
     let rollStart = 0;
@@ -265,7 +256,7 @@
     let finalRot = new THREE.Euler();
 
     function getRotationToFace(normal, cameraPos) {
-      const dir = cameraPos.clone().sub(cube.position).normalize();
+      const dir = cameraPos.clone().sub(dice.position).normalize();
       const q = new THREE.Quaternion().setFromUnitVectors(normal, dir);
       return new THREE.Euler().setFromQuaternion(q);
     }
@@ -285,16 +276,22 @@
     }
 
     function lanzarDado() {
-      if (isRolling) return;
+      if (isRolling || !fontLoaded) return;
       vibrarPequena();
-      cube.material = createDiceMaterials(-1);
-      cube.material.needsUpdate = true;
       document.getElementById('info').textContent = "Tira el dado...";
       selectedFace = Math.floor(Math.random() * 6);
       finalRot = getRotationToFace(faceNormals[selectedFace], camera.position);
-      initialRot = cube.rotation.clone();
+      initialRot = dice.rotation.clone();
       rollStart = clock.getElapsedTime();
       isRolling = true;
+      // Reset texto: todos normales
+      for (let i = 0; i < textMeshes.length; i++) {
+        textMeshes[i].material = new THREE.MeshBasicMaterial({
+          color: diceFaceColors[i]
+        });
+        textMeshes[i].material.needsUpdate = true;
+        textMeshes[i].scale.set(1,1,1);
+      }
     }
     window.addEventListener('click', function(e){
       vibrarPequena();
@@ -307,6 +304,41 @@
       }
     });
 
+    function resaltaPalabraGanadora(idx) {
+      for (let i = 0; i < textMeshes.length; i++) {
+        if (i === idx) {
+          // Solo la palabra ganadora: color fuerte, neón/blanco, resplandor
+          textMeshes[i].material = new THREE.MeshBasicMaterial({
+            color: 0xffffff
+          });
+          textMeshes[i].material.needsUpdate = true;
+          textMeshes[i].scale.set(1.2,1.2,1.2); // efecto de tamaño
+          // Simula glow neón: crea outline fake
+          if (!textMeshes[i].userData.glow) {
+            const glowMat = new THREE.MeshBasicMaterial({
+              color: diceFaceNeonGlows[i],
+              transparent: true,
+              opacity: 0.35,
+              depthWrite: false
+            });
+            const glowMesh = textMeshes[i].clone();
+            glowMesh.material = glowMat;
+            glowMesh.scale.multiplyScalar(1.5);
+            glowMesh.renderOrder = 0;
+            textMeshes[i].add(glowMesh);
+            textMeshes[i].userData.glow = glowMesh;
+          }
+        } else {
+          // Quita glow si lo tiene
+          if(textMeshes[i].userData.glow) {
+            textMeshes[i].remove(textMeshes[i].userData.glow);
+            textMeshes[i].userData.glow = null;
+          }
+          textMeshes[i].scale.set(1,1,1);
+        }
+      }
+    }
+
     function animate() {
       requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
@@ -317,20 +349,19 @@
       discoLights[1].position.z = -2 + Math.sin(t*1.3)*2;
       discoLights[2].position.y = 4 + Math.sin(t*2.5)*0.8;
 
-      cube.position.y = baseY + Math.sin(t * 2.8) * 0.14;
+      dice.position.y = baseY + Math.sin(t * 2.8) * 0.14;
       if (isRolling) {
         const elapsed = t - rollStart;
         const p = Math.min(elapsed / rollDuration, 1);
         const ease = 1 - Math.pow(1 - p, 3);
-        cube.rotation.x = initialRot.x + (finalRot.x - initialRot.x) * ease + 4 * Math.PI * (1 - ease);
-        cube.rotation.y = initialRot.y + (finalRot.y - initialRot.y) * ease + 4 * Math.PI * (1 - ease);
-        cube.rotation.z = initialRot.z + (finalRot.z - initialRot.z) * ease + 2 * Math.PI * (1 - ease);
+        dice.rotation.x = initialRot.x + (finalRot.x - initialRot.x) * ease + 4 * Math.PI * (1 - ease);
+        dice.rotation.y = initialRot.y + (finalRot.y - initialRot.y) * ease + 4 * Math.PI * (1 - ease);
+        dice.rotation.z = initialRot.z + (finalRot.z - initialRot.z) * ease + 2 * Math.PI * (1 - ease);
         if (p >= 1) {
           isRolling = false;
           document.getElementById('info').textContent = `Te tocó: ${labels[selectedFace]}`;
-          cube.material = createDiceMaterials(selectedFace);
-          cube.material.needsUpdate = true;
-          cube.rotation.copy(finalRot);
+          resaltaPalabraGanadora(selectedFace);
+          dice.rotation.copy(finalRot);
 
           vibrarGrande();
           playSound();
