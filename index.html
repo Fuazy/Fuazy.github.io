@@ -33,7 +33,6 @@
       pointer-events: none;
       font-weight: bold;
     }
-
     h2 {
       position: absolute;
       top: 10vw;
@@ -104,10 +103,9 @@
     renderer.setClearColor(0x150024);
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
 
-    // LIGHTS
+    // LIGHTS disco
     scene.add(new THREE.AmbientLight(0x6600cc, 0.37));
     const discoLights = [
       new THREE.PointLight(0xff00cc, 1.3, 8, 2),
@@ -119,12 +117,11 @@
     discoLights[2].position.set(0, 4, 0);
     discoLights.forEach(l => { l.castShadow = false; scene.add(l); });
 
-    // DISCO WALLS & FLOOR
+    // Disco floor & walls
     const discoWallTexture = createDiscoWallTexture();
     discoWallTexture.wrapS = discoWallTexture.wrapT = THREE.RepeatWrapping;
     discoWallTexture.repeat.set(1, 1);
 
-    // Floor
     const floorGeo = new THREE.PlaneGeometry(8, 8);
     const floorMat = new THREE.MeshPhongMaterial({
       map: discoWallTexture,
@@ -140,7 +137,6 @@
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Walls
     const wallMat = new THREE.MeshPhongMaterial({
       map: discoWallTexture,
       shininess: 40,
@@ -156,13 +152,13 @@
     walls.position.y = 2.3;
     scene.add(walls);
 
-    // DICE BASE
+    // DADO BASE
     const diceBaseMaterial = new THREE.MeshStandardMaterial({
-      color: 0x180045,
-      metalness: 0.28,
-      roughness: 0.5,
-      emissive: 0x0e0020,
-      emissiveIntensity: 0.18
+      color: 0x1a0030,
+      metalness: 0.32,
+      roughness: 0.48,
+      emissive: 0x210042,
+      emissiveIntensity: 0.12
     });
     const dice = new THREE.Mesh(new THREE.BoxGeometry(1.2,1.2,1.2), [
       diceBaseMaterial, diceBaseMaterial, diceBaseMaterial,
@@ -207,36 +203,36 @@
       [0, 0, -0.61, 0, Math.PI, 0],       // -Z
     ];
 
-    // TEXTOS
     let textMeshes = [];
     let fontLoaded = false;
     let diceReady = false;
 
+    // Cargar fuente y crear textos
     const loader = new THREE.FontLoader();
     loader.load('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json', function(font) {
       fontLoaded = true;
       for (let i = 0; i < 6; i++) {
         const textGeo = new THREE.TextGeometry(labels[i], {
           font: font,
-          size: 0.22,
-          height: 0.07,
+          size: 0.25,
+          height: 0.10,
           curveSegments: 4,
           bevelEnabled: true,
-          bevelThickness: 0.018,
-          bevelSize: 0.018,
+          bevelThickness: 0.016,
+          bevelSize: 0.012,
           bevelSegments: 2,
         });
-        // Material base: color neón propio
+        // Material base: neón, pero con color fuerte y visible
         const textMat = new THREE.MeshBasicMaterial({
           color: diceFaceColors[i]
         });
         const textMesh = new THREE.Mesh(textGeo, textMat);
-        // Centro texto
+        // Centrado
         textGeo.computeBoundingBox();
         const center = textGeo.boundingBox.getCenter(new THREE.Vector3());
         textMesh.position.x = facePositions[i][0] - center.x * Math.cos(facePositions[i][4]);
         textMesh.position.y = facePositions[i][1] - center.y;
-        textMesh.position.z = facePositions[i][2] - center.z;
+        textMesh.position.z = facePositions[i][2] - center.z + 0.04; // +Z para que SIEMPRE quede por encima de la cara
         textMesh.rotation.set(facePositions[i][3], facePositions[i][4], facePositions[i][5]);
         dice.add(textMesh);
         textMeshes.push(textMesh);
@@ -283,7 +279,7 @@
       initialRot = dice.rotation.clone();
       rollStart = clock.getElapsedTime();
       isRolling = true;
-      // Reset texto: todos normales
+      // Reset textos
       for (let i = 0; i < textMeshes.length; i++) {
         textMeshes[i].material.color.set(diceFaceColors[i]);
         textMeshes[i].material.needsUpdate = true;
@@ -311,13 +307,13 @@
           // Solo la palabra ganadora: blanca, neón, se agranda, glow fake
           textMeshes[i].material.color.set(0xffffff);
           textMeshes[i].material.needsUpdate = true;
-          textMeshes[i].scale.set(1.2,1.2,1.2);
+          textMeshes[i].scale.set(1.23,1.23,1.23);
           // Simula glow neón: crea outline fake
           if (!textMeshes[i].userData.glow) {
             const glowMat = new THREE.MeshBasicMaterial({
               color: diceFaceNeonGlows[i],
               transparent: true,
-              opacity: 0.32,
+              opacity: 0.36,
               depthWrite: false
             });
             const glowMesh = textMeshes[i].clone();
