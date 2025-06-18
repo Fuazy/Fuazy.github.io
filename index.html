@@ -65,7 +65,7 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/FontLoader.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/geometries/TextGeometry.js"></script>
   <script>
-    // --- SCENE & CAMERA ---
+    // SCENE
     const scene = new THREE.Scene();
 
     // Disco wall texture
@@ -94,12 +94,12 @@
       return discoWallTexture;
     }
 
-    // Cámara: dado centrado
+    // CAMERA
     const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.set(4, 3.7, 4);
     camera.lookAt(0, 0.13, 0);
 
-    // Renderer
+    // RENDERER
     const renderer = new THREE.WebGLRenderer({antialias: true, alpha: false});
     renderer.setClearColor(0x150024);
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -107,7 +107,7 @@
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.body.appendChild(renderer.domElement);
 
-    // Luces de discoteca
+    // LIGHTS
     scene.add(new THREE.AmbientLight(0x6600cc, 0.37));
     const discoLights = [
       new THREE.PointLight(0xff00cc, 1.3, 8, 2),
@@ -119,12 +119,12 @@
     discoLights[2].position.set(0, 4, 0);
     discoLights.forEach(l => { l.castShadow = false; scene.add(l); });
 
-    // Suelo y paredes disco
+    // DISCO WALLS & FLOOR
     const discoWallTexture = createDiscoWallTexture();
     discoWallTexture.wrapS = discoWallTexture.wrapT = THREE.RepeatWrapping;
     discoWallTexture.repeat.set(1, 1);
 
-    // Suelo
+    // Floor
     const floorGeo = new THREE.PlaneGeometry(8, 8);
     const floorMat = new THREE.MeshPhongMaterial({
       map: discoWallTexture,
@@ -140,7 +140,7 @@
     floor.receiveShadow = true;
     scene.add(floor);
 
-    // Paredes
+    // Walls
     const wallMat = new THREE.MeshPhongMaterial({
       map: discoWallTexture,
       shininess: 40,
@@ -156,26 +156,9 @@
     walls.position.y = 2.3;
     scene.add(walls);
 
-    // Sombra del dado
-    const shadowPlaneGeo = new THREE.PlaneGeometry(2, 2);
-    const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.34 });
-    const shadowPlane = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
-    shadowPlane.rotation.x = -Math.PI / 2;
-    shadowPlane.position.y = -1.22;
-    shadowPlane.receiveShadow = true;
-    scene.add(shadowPlane);
-
-    // Colores para caras del dado (cada cara diferente)
-    const diceFaceColors = [
-      "#00ffe5", "#ffea00", "#ff5eec", "#ff0054", "#24ff00", "#0092ff"
-    ];
-    const diceFaceNeonGlows = [
-      "#00fff7", "#fff200", "#ffb3fd", "#ff597a", "#8dff73", "#5cc7ff"
-    ];
-
-    // Dado base (color mate liso, no cambia)
+    // DICE BASE
     const diceBaseMaterial = new THREE.MeshStandardMaterial({
-      color: 0x2c0047,
+      color: 0x180045,
       metalness: 0.28,
       roughness: 0.5,
       emissive: 0x0e0020,
@@ -190,8 +173,31 @@
     dice.position.y = 0.13;
     scene.add(dice);
 
-    // Texto en cada cara (como Mesh independientes)
+    // SHADOW
+    const shadowPlaneGeo = new THREE.PlaneGeometry(2, 2);
+    const shadowPlaneMat = new THREE.ShadowMaterial({ opacity: 0.34 });
+    const shadowPlane = new THREE.Mesh(shadowPlaneGeo, shadowPlaneMat);
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.y = -1.22;
+    shadowPlane.receiveShadow = true;
+    scene.add(shadowPlane);
+
+    // DATA
     const labels = ['Beso', 'Bailecito', 'Copa', 'Pico', 'Chupito', 'Instagram'];
+    const diceFaceColors = [
+      "#00ffe5", "#ffea00", "#ff5eec", "#ff0054", "#24ff00", "#0092ff"
+    ];
+    const diceFaceNeonGlows = [
+      "#00fff7", "#fff200", "#ffb3fd", "#ff597a", "#8dff73", "#5cc7ff"
+    ];
+    const faceNormals = [
+      new THREE.Vector3(1, 0, 0),
+      new THREE.Vector3(-1, 0, 0),
+      new THREE.Vector3(0, 1, 0),
+      new THREE.Vector3(0, -1, 0),
+      new THREE.Vector3(0, 0, 1),
+      new THREE.Vector3(0, 0, -1),
+    ];
     const facePositions = [
       [0.61, 0, 0, 0, -Math.PI/2, 0],     // +X
       [-0.61, 0, 0, 0, Math.PI/2, 0],     // -X
@@ -200,8 +206,11 @@
       [0, 0, 0.61, 0, 0, 0],              // +Z
       [0, 0, -0.61, 0, Math.PI, 0],       // -Z
     ];
+
+    // TEXTOS
     let textMeshes = [];
     let fontLoaded = false;
+    let diceReady = false;
 
     const loader = new THREE.FontLoader();
     loader.load('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json', function(font) {
@@ -217,35 +226,25 @@
           bevelSize: 0.018,
           bevelSegments: 2,
         });
-        // Material base: blanco con glow neón
+        // Material base: color neón propio
         const textMat = new THREE.MeshBasicMaterial({
-          color: 0xffffff
+          color: diceFaceColors[i]
         });
         const textMesh = new THREE.Mesh(textGeo, textMat);
-        // Centrado
+        // Centro texto
         textGeo.computeBoundingBox();
         const center = textGeo.boundingBox.getCenter(new THREE.Vector3());
         textMesh.position.x = facePositions[i][0] - center.x * Math.cos(facePositions[i][4]);
         textMesh.position.y = facePositions[i][1] - center.y;
         textMesh.position.z = facePositions[i][2] - center.z;
         textMesh.rotation.set(facePositions[i][3], facePositions[i][4], facePositions[i][5]);
-        textMesh.material.color.set(diceFaceColors[i]);
-        textMesh.material.needsUpdate = true;
+        dice.add(textMesh);
         textMeshes.push(textMesh);
-        scene.add(textMesh);
       }
+      diceReady = true;
     });
 
-    // Animación y lógica de tirada
-    const faceNormals = [
-      new THREE.Vector3(1, 0, 0),
-      new THREE.Vector3(-1, 0, 0),
-      new THREE.Vector3(0, 1, 0),
-      new THREE.Vector3(0, -1, 0),
-      new THREE.Vector3(0, 0, 1),
-      new THREE.Vector3(0, 0, -1),
-    ];
-
+    // ANIMACIÓN Y LÓGICA
     const clock = new THREE.Clock();
     let baseY = dice.position.y;
     let selectedFace = 0;
@@ -276,7 +275,7 @@
     }
 
     function lanzarDado() {
-      if (isRolling || !fontLoaded) return;
+      if (isRolling || !diceReady) return;
       vibrarPequena();
       document.getElementById('info').textContent = "Tira el dado...";
       selectedFace = Math.floor(Math.random() * 6);
@@ -286,11 +285,13 @@
       isRolling = true;
       // Reset texto: todos normales
       for (let i = 0; i < textMeshes.length; i++) {
-        textMeshes[i].material = new THREE.MeshBasicMaterial({
-          color: diceFaceColors[i]
-        });
+        textMeshes[i].material.color.set(diceFaceColors[i]);
         textMeshes[i].material.needsUpdate = true;
         textMeshes[i].scale.set(1,1,1);
+        if(textMeshes[i].userData.glow) {
+          textMeshes[i].remove(textMeshes[i].userData.glow);
+          textMeshes[i].userData.glow = null;
+        }
       }
     }
     window.addEventListener('click', function(e){
@@ -307,29 +308,26 @@
     function resaltaPalabraGanadora(idx) {
       for (let i = 0; i < textMeshes.length; i++) {
         if (i === idx) {
-          // Solo la palabra ganadora: color fuerte, neón/blanco, resplandor
-          textMeshes[i].material = new THREE.MeshBasicMaterial({
-            color: 0xffffff
-          });
+          // Solo la palabra ganadora: blanca, neón, se agranda, glow fake
+          textMeshes[i].material.color.set(0xffffff);
           textMeshes[i].material.needsUpdate = true;
-          textMeshes[i].scale.set(1.2,1.2,1.2); // efecto de tamaño
+          textMeshes[i].scale.set(1.2,1.2,1.2);
           // Simula glow neón: crea outline fake
           if (!textMeshes[i].userData.glow) {
             const glowMat = new THREE.MeshBasicMaterial({
               color: diceFaceNeonGlows[i],
               transparent: true,
-              opacity: 0.35,
+              opacity: 0.32,
               depthWrite: false
             });
             const glowMesh = textMeshes[i].clone();
             glowMesh.material = glowMat;
-            glowMesh.scale.multiplyScalar(1.5);
+            glowMesh.scale.multiplyScalar(1.48);
             glowMesh.renderOrder = 0;
             textMeshes[i].add(glowMesh);
             textMeshes[i].userData.glow = glowMesh;
           }
         } else {
-          // Quita glow si lo tiene
           if(textMeshes[i].userData.glow) {
             textMeshes[i].remove(textMeshes[i].userData.glow);
             textMeshes[i].userData.glow = null;
